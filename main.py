@@ -49,6 +49,59 @@ db.init_app(app)
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Database initialization for production
+with app.app_context():
+    try:
+        # Create instance folder if it doesn't exist
+        import os
+        instance_path = os.path.join(os.path.dirname(__file__), 'instance')
+        os.makedirs(instance_path, exist_ok=True)
+        
+        # Create all tables
+        db.create_all()
+        print("✅ Database tables created/verified")
+        
+        # Create default admin if not exists
+        from models import User, Member
+        if not User.query.first():
+            print("📝 Creating default users...")
+            
+            # Admin user
+            admin = User(
+                username='admin', 
+                password='admin123', 
+                role='admin', 
+                email='admin@society.com'
+            )
+            db.session.add(admin)
+            
+            # Resident user
+            resident = User(
+                username='john', 
+                password='john123', 
+                role='resident', 
+                email='john@example.com'
+            )
+            db.session.add(resident)
+            db.session.flush()
+            
+            # Member record
+            member = Member(
+                name='John Doe', 
+                flat_no='101', 
+                contact='9876543210', 
+                email='john@example.com', 
+                member_type='Owner'
+            )
+            db.session.add(member)
+            
+            db.session.commit()
+            print("✅ Default users created successfully!")
+            
+    except Exception as e:
+        print(f"⚠️ Database initialization error: {e}")
+        # Don't crash the app, just log the error
+        
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
