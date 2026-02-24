@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-tools"></i> Complaints Management</h2>
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Complaints</h6>
+                            <h2 class="mb-0">{{ total }}</h2>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Pending</h6>
+                            <h2 class="mb-0">{{ pending }}</h2>
+                        </div>
+                        <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">In Progress</h6>
+                            <h2 class="mb-0">{{ in_progress }}</h2>
+                        </div>
+                        <i class="bi bi-gear fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Completed</h6>
+                            <h2 class="mb-0">{{ completed }}</h2>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Complaint Form (Collapsible) -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white" data-bs-toggle="collapse" data-bs-target="#addComplaintForm" style="cursor: pointer;">
+            <h5 class="mb-0">
+                <i class="bi bi-plus-circle"></i> Add New Complaint
+                <i class="bi bi-chevron-down float-end"></i>
+            </h5>
+        </div>
+        <div class="collapse" id="addComplaintForm">
+            <div class="card-body">
+                <form action="{{ url_for('add_complaint') }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Member *</label>
+                            <select class="form-select" name="member_id" required>
+                                <option value="">Select Member</option>
+                                {% for member in members %}
+                                <option value="{{ member.id }}">{{ member.name }} (Flat {{ member.flat_no }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Category *</label>
+                            <select class="form-select" name="category" required>
+                                <option value="General">General</option>
+                                <option value="Plumbing">Plumbing</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Cleaning">Cleaning</option>
+                                <option value="Security">Security</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Priority *</label>
+                            <select class="form-select" name="priority" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Description *</label>
+                            <textarea class="form-control" name="description" rows="2" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Add Complaint
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-list"></i> All Complaints</h5>
+            <div>
+                <select class="form-select form-select-sm" id="filterStatus" style="width: auto; display: inline-block;">
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+                <select class="form-select form-select-sm" id="filterCategory" style="width: auto; display: inline-block;">
+                    <option value="all">All Categories</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Security">Security</option>
+                    <option value="General">General</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if complaints %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="complaintsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Member</th>
+                            <th>Flat</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in complaints %}
+                        <tr data-status="{{ complaint.status }}" data-category="{{ complaint.category }}">
+                            <td>#{{ complaint.id }}</td>
+                            <td>{{ complaint.member.name }}</td>
+                            <td>{{ complaint.member.flat_no }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ complaint.category }}</span>
+                            </td>
+                            <td>
+                                <span title="{{ complaint.description }}">
+                                    {{ complaint.description[:30] }}{% if complaint.description|length > 30 %}...{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if complaint.priority == 'Low' %}
+                                    <span class="badge bg-info">Low</span>
+                                {% elif complaint.priority == 'Medium' %}
+                                    <span class="badge bg-primary">Medium</span>
+                                {% elif complaint.priority == 'High' %}
+                                    <span class="badge bg-warning">High</span>
+                                {% elif complaint.priority == 'Urgent' %}
+                                    <span class="badge bg-danger">Urgent</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif complaint.status == 'In Progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                {% elif complaint.status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ complaint.date_requested.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    {% if complaint.status != 'Completed' %}
+                                    <a href="{{ url_for('update_complaint', id=complaint.id, status='In Progress') }}" 
+                                       class="btn btn-info" title="Start Progress">
+                                        <i class="bi bi-play-fill"></i>
+                                    </a>
+                                    <a href="{{ url_for('update_complaint', id=complaint.id, status='Completed') }}" 
+                                       class="btn btn-success" title="Mark Completed"
+                                       onclick="return confirm('Mark this complaint as completed?')">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                    <a href="{{ url_for('delete_complaint', id=complaint.id) }}" 
+                                       class="btn btn-danger" title="Delete"
+                                       onclick="return confirm('Delete this complaint?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-3">No complaints found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter functionality
+    document.getElementById('filterStatus').addEventListener('change', filterTable);
+    document.getElementById('filterCategory').addEventListener('change', filterTable);
+
+    function filterTable() {
+        const statusFilter = document.getElementById('filterStatus').value;
+        const categoryFilter = document.getElementById('filterCategory').value;
+        const rows = document.querySelectorAll('#complaintsTable tbody tr');
+
+        rows.forEach(row => {
+            const status = row.dataset.status;
+            const category = row.dataset.category;
+            let show = true;
+
+            if (statusFilter !== 'all' && status !== statusFilter) show = false;
+            if (categoryFilter !== 'all' && category !== categoryFilter) show = false;
+
+            row.style.display = show ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

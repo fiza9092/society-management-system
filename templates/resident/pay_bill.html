@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash"></i> Pay Maintenance Bill</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Bill Details:</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Bill Number:</td>
+                                <td><strong>{{ bill.bill_number }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Month/Year:</td>
+                                <td>{{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][bill.month-1] }} {{ bill.year }}</td>
+                            </tr>
+                            <tr>
+                                <td>Due Date:</td>
+                                <td>{{ bill.due_date.strftime('%d-%m-%Y') }}</td>
+                            </tr>
+                            <tr>
+                                <td>Status:</td>
+                                <td>
+                                    {% if bill.status == 'Overdue' %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Unpaid</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Amount Breakdown:</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Maintenance Amount:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.maintenance_amount) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Sinking Fund:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.sinking_fund) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Parking Fee:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.parking_fee) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Water Charges:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.water_charges) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Electricity Charges:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.electricity_charges) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Garbage Fee:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.garbage_fee) }}</td>
+                            </tr>
+                            {% if bill.late_fee > 0 %}
+                            <tr class="text-danger">
+                                <td>Late Fee:</td>
+                                <td class="text-end">+ ₹{{ "%.2f"|format(bill.late_fee) }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if bill.discount > 0 %}
+                            <tr class="text-success">
+                                <td>Discount:</td>
+                                <td class="text-end">- ₹{{ "%.2f"|format(bill.discount) }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="fw-bold">
+                                <td>Total Amount:</td>
+                                <td class="text-end">₹{{ "%.2f"|format(bill.total_amount) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-select" name="payment_method" required>
+                                <option value="">Select Payment Method</option>
+                                <option value="Credit Card">Credit Card</option>
+                                <option value="Debit Card">Debit Card</option>
+                                <option value="Net Banking">Net Banking</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Cash">Cash</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Transaction ID/Reference</label>
+                            <input type="text" class="form-control" name="transaction_id" 
+                                   placeholder="Enter transaction ID or reference number">
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Pay ₹{{ "%.2f"|format(bill.total_amount) }}
+                            </button>
+                            <a href="{{ url_for('resident_bills') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="bi bi-cash-stack"></i> My Maintenance Bills</h2>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Total Paid</h6>
+                    <h3>₹{{ "%.2f"|format(total_paid) }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6>Total Due</h6>
+                    <h3>₹{{ "%.2f"|format(total_due) }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bills List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Bill History</h5>
+        </div>
+        <div class="card-body">
+            {% if bills %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Bill No.</th>
+                            <th>Month/Year</th>
+                            <th>Amount</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Paid Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in bills %}
+                        <tr>
+                            <td><small>{{ bill.bill_number }}</small></td>
+                            <td>{{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][bill.month-1] }} {{ bill.year }}</td>
+                            <td><strong>₹{{ "%.2f"|format(bill.total_amount) }}</strong></td>
+                            <td>{{ bill.due_date.strftime('%d-%m-%Y') }}</td>
+                            <td>
+                                {% if bill.status == 'Paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif bill.status == 'Unpaid' %}
+                                    <span class="badge bg-warning">Unpaid</span>
+                                {% elif bill.status == 'Overdue' %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ bill.paid_date.strftime('%d-%m-%Y') if bill.paid_date else '-' }}</td>
+                            <td>
+                                {% if bill.status != 'Paid' %}
+                                <a href="{{ url_for('pay_bill', id=bill.id) }}" class="btn btn-sm btn-success">
+                                    <i class="bi bi-cash"></i> Pay Now
+                                </a>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary" disabled>
+                                    <i class="bi bi-check-circle"></i> Paid
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-3">No bills found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

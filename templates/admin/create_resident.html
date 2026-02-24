@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Create New Resident Account</h2>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Resident Registration Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('create_resident') }}">
+                        <!-- Login Credentials -->
+                        <h5 class="text-primary">Login Credentials</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="username" class="form-label">Username *</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <h5 class="text-primary mt-4">Personal Information</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <!-- Resident Details -->
+                        <h5 class="text-primary mt-4">Resident Details</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="flat_no" class="form-label">Flat Number *</label>
+                                <input type="text" class="form-control" id="flat_no" name="flat_no" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="contact" class="form-label">Contact Number *</label>
+                                <input type="text" class="form-control" id="contact" name="contact" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="member_type" class="form-label">Member Type *</label>
+                                <select class="form-control" id="member_type" name="member_type" required>
+                                    <option value="Owner">Owner</option>
+                                    <option value="Tenant">Tenant</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            The resident will use the username and password to login.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin_members') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Resident Account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

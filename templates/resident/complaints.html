@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4"><i class="bi bi-tools"></i> My Complaints</h2>
+
+    <!-- Submit New Complaint -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Submit New Complaint</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" name="category" required>
+                            <option value="General">General</option>
+                            <option value="Plumbing">Plumbing</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Cleaning">Cleaning</option>
+                            <option value="Security">Security</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" name="priority" required>
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                            <option value="Urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" 
+                                  placeholder="Describe your issue in detail..." required></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Submit Complaint
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- My Complaints List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">My Complaints History</h5>
+        </div>
+        <div class="card-body">
+            {% if complaints %}
+            <div class="list-group">
+                {% for complaint in complaints %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <span class="badge bg-secondary me-2">{{ complaint.category }}</span>
+                                {% if complaint.priority == 'Low' %}
+                                    <span class="badge bg-info">Low Priority</span>
+                                {% elif complaint.priority == 'Medium' %}
+                                    <span class="badge bg-primary">Medium Priority</span>
+                                {% elif complaint.priority == 'High' %}
+                                    <span class="badge bg-warning">High Priority</span>
+                                {% elif complaint.priority == 'Urgent' %}
+                                    <span class="badge bg-danger">Urgent</span>
+                                {% endif %}
+                            </h6>
+                        </div>
+                        <div>
+                            {% if complaint.status == 'Pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% elif complaint.status == 'In Progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                            {% elif complaint.status == 'Completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="mb-1">{{ complaint.description }}</p>
+                    <small class="text-muted">
+                        Submitted: {{ complaint.date_requested.strftime('%d-%m-%Y %H:%M') }}
+                        {% if complaint.resolved_date %}
+                        | Resolved: {{ complaint.resolved_date.strftime('%d-%m-%Y') }}
+                        {% endif %}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-3">No complaints submitted yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

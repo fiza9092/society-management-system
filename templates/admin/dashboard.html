@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+
+    <!-- Statistics Cards - Row 1 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Members</h6>
+                            <h2 class="mb-0">{{ members_count }}</h2>
+                        </div>
+                        <i class="bi bi-people fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Pending Complaints</h6>
+                            <h2 class="mb-0">{{ pending_complaints }}</h2>
+                        </div>
+                        <i class="bi bi-tools fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total Notices</h6>
+                            <h2 class="mb-0">{{ notices|length }}</h2>
+                        </div>
+                        <i class="bi bi-megaphone fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Row 2 (Billing Stats) -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-success h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-success">Total Collected</h6>
+                            <h3 class="mb-0 text-success">₹{{ "%.2f"|format(total_collected) }}</h3>
+                            <small class="text-muted">From paid bills</small>
+                        </div>
+                        <i class="bi bi-bank fs-1 text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-warning">Pending Amount</h6>
+                            <h3 class="mb-0 text-warning">₹{{ "%.2f"|format(pending_amount) }}</h3>
+                            <small class="text-muted">From unpaid/overdue bills</small>
+                        </div>
+                        <i class="bi bi-clock-history fs-1 text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-danger">Overdue Bills</h6>
+                            <h3 class="mb-0 text-danger">{{ overdue_count }}</h3>
+                            <small class="text-muted">Bills past due date</small>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-2 col-6">
+                            <a href="{{ url_for('admin_members') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-people"></i> Members
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-2 col-6">
+                            <a href="{{ url_for('admin_complaints') }}" class="btn btn-outline-warning w-100">
+                                <i class="bi bi-tools"></i> Complaints
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="{{ url_for('admin_billing') }}" class="btn btn-outline-info w-100">
+                                <i class="bi bi-cash-stack"></i> Billing
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="{{ url_for('admin_notices') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-megaphone"></i> Notices
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <a href="{{ url_for('create_resident') }}" class="btn btn-outline-success w-100">
+                                <i class="bi bi-person-plus"></i> New Resident
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two Column Layout -->
+    <div class="row">
+        <!-- Recent Complaints -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-tools"></i> Recent Complaints</h5>
+                    <a href="{{ url_for('admin_complaints') }}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if complaints %}
+                        <div class="list-group list-group-flush">
+                            {% for complaint in complaints[:5] %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">{{ complaint.member.name }} (Flat {{ complaint.member.flat_no }})</h6>
+                                        <p class="mb-1 small">{{ complaint.description[:50] }}{% if complaint.description|length > 50 %}...{% endif %}</p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-tag"></i> {{ complaint.category }} | 
+                                            <i class="bi bi-calendar"></i> {{ complaint.date_requested.strftime('%d-%m-%Y') }}
+                                        </small>
+                                    </div>
+                                    <div>
+                                        {% if complaint.priority == 'High' or complaint.priority == 'Urgent' %}
+                                            <span class="badge bg-danger mb-1">{{ complaint.priority }}</span>
+                                        {% elif complaint.priority == 'Medium' %}
+                                            <span class="badge bg-warning mb-1">{{ complaint.priority }}</span>
+                                        {% else %}
+                                            <span class="badge bg-info mb-1">{{ complaint.priority }}</span>
+                                        {% endif %}
+                                        <br>
+                                        {% if complaint.status == 'Pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif complaint.status == 'In Progress' %}
+                                            <span class="badge bg-info">In Progress</span>
+                                        {% elif complaint.status == 'Completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No complaints yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bills -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Recent Bills</h5>
+                    <a href="{{ url_for('admin_billing') }}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if bills %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Month</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in bills[:5] %}
+                                    <tr>
+                                        <td>{{ bill.member.name }}<br><small>{{ bill.member.flat_no }}</small></td>
+                                        <td>{{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][bill.month-1] }} {{ bill.year }}</td>
+                                        <td><strong>₹{{ "%.2f"|format(bill.total_amount) }}</strong></td>
+                                        <td>
+                                            {% if bill.status == 'Paid' %}
+                                                <span class="badge bg-success">Paid</span>
+                                            {% elif bill.status == 'Overdue' %}
+                                                <span class="badge bg-danger">Overdue</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Unpaid</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No bills generated yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+ 
+    <!-- Recent Notices -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-megaphone"></i> Recent Notices</h5>
+                    <a href="{{ url_for('admin_notices') }}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if notices %}
+                        <div class="list-group list-group-flush">
+                            {% for notice in notices[:3] %}
+                            <div class="list-group-item px-0">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ notice.title }}</h6>
+                                    <small class="text-muted">{{ notice.date_posted.strftime('%d-%m-%Y') }}</small>
+                                </div>
+                                <p class="mb-1 text-muted">{{ notice.content[:150] }}{% if notice.content|length > 150 %}...{% endif %}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-3">No notices posted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
