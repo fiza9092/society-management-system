@@ -8,12 +8,41 @@ from dateutil.relativedelta import relativedelta
 import random
 import os
 
-app = Flask(__name__)
 
+
+app = Flask(__name__)
+import sys
+import logging
+
+# Set up logging
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+# Add this error handler
+@app.errorhandler(500)
+def internal_error(error):
+    return "500 error: {}".format(str(error)), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    # Log the error
+    app.logger.error(f"Unhandled exception: {str(e)}")
+    return "Unhandled exception: {}".format(str(e)), 500
 # ===== SECRET KEY CONFIGURATION =====
 app.config['SECRET_KEY'] = 'your-secret-key-here-change-this-in-production'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///society.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+import os
+
+# Get the absolute path to the instance folder
+basedir = os.path.abspath(os.path.dirname(__file__))
+instance_path = os.path.join(basedir, 'instance')
+
+# Ensure instance folder exists
+os.makedirs(instance_path, exist_ok=True)
+
+# Update database URI
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(instance_path, 'society.db')
 
 # Initialize extensions with app
 db.init_app(app)
@@ -23,6 +52,35 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+@app.route('/debug')
+def debug():
+    import sys
+    import os
+    info = {
+        "python_version": sys.version,
+        "current_dir": os.getcwd(),
+        "files": os.listdir('.'),
+        "env_vars": dict(os.environ),
+    }
+    return str(info)
+
+
+@app.route('/debug-imports')
+def debug_imports():
+    import importlib
+    results = []
+    modules = ['flask', 'flask_sqlalchemy', 'flask_login', 'werkzeug', 'sqlalchemy']
+    
+    for module in modules:
+        try:
+            mod = importlib.import_module(module)
+            results.append(f"✓ {module} - version: {getattr(mod, '__version__', 'unknown')}")
+        except Exception as e:
+            results.append(f"✗ {module} - error: {str(e)}")
+    
+    return "<br>".join(results)
 
 # ===== ROOT ROUTE =====
 @app.route('/')
